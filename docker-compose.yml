@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  postgres-students:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: "students_db"
+    ports:
+      - "5432:5432"
+
+  postgres-courses:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: "courses_db"
+    ports:
+      - "5433:5432"
+  postgres-enrollments:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: "enrollments_db"
+    ports:
+      - "5434:5432"
