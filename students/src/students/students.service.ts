@@ -31,16 +31,34 @@ export class StudentsService {
     async findOne(id: string) {
         const resultat= await this.prisma.student.findUnique({where:{id}});
         if (resultat === null) {
-             throw new NotFoundException();
+             throw new NotFoundException("Student not found");
         }
         return resultat;
     }
 
     async update(id: string, updateStudentDto: UpdateStudentDto) {
-        return await this.prisma.student.update({where:{id: id},data: updateStudentDto});
+        try {
+            return await this.prisma.student.update({ where: { id }, data: updateStudentDto });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2025') {
+                    throw new NotFoundException("Student not found");
+                }
+            }
+            throw error;
+        }
     }
 
     async remove(id: string) {
-        return await this.prisma.student.delete({where:{id}});
+        try {
+            return await this.prisma.student.delete({ where: { id } });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2025') {
+                    throw new NotFoundException("Student not found");
+                }
+            }
+            throw error;
+        }
     }
 }
