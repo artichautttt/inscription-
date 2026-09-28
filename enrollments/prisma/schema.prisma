@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Une inscription = un étudiant inscrit à un cours.
+/// Les identifiants étudiant/cours proviennent des bases du Dev A (UUID).
+model Inscription {
+  id         String            @id @default(uuid()) @db.Uuid
+  etudiantId String            @db.Uuid
+  coursId    String            @db.Uuid
+  statut     StatutInscription @default(CONFIRMEE)
+  date       DateTime          @default(now())
+
+  // Règle métier "pas de doublon" garantie au niveau base :
+  // un même étudiant ne peut s'inscrire qu'une seule fois à un même cours.
+  @@unique([etudiantId, coursId], name: "uniq_etudiant_cours")
+  @@map("inscriptions")
+}
+
+enum StatutInscription {
+  CONFIRMEE
+  ANNULEE
+}

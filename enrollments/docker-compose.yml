@@ -1,0 +1,16 @@
+# Postgres local pour le service Inscriptions uniquement.
+# À fusionner plus tard dans le docker-compose racine du monorepo.
+services:
+  enrollments-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: enrollments
+    ports:
+      - "5432:5432"
+    volumes:
+      - enrollments-db-data:/var/lib/postgresql/data
+
+volumes:
+  enrollments-db-data:
