@@ -1,34 +1,65 @@
-import { useState } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { useAuth } from './auth/AuthContext';
+import Header from './components/Header';
+import Login from './components/Login';
+import Register from './components/Register';
 import Catalogue from './components/Catalogue';
 import MesInscriptions from './components/MesInscriptions';
-
-// Pas d'authentification dans ce projet : on fixe un étudiant courant.
-// /!\ Remplace par un ID réel présent dans le service Étudiants de A.
-export const ETUDIANT_ID = '11111111-1111-1111-1111-111111111111';
+import AdminCourses from './components/AdminCourses';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
-  const [onglet, setOnglet] = useState<'catalogue' | 'inscriptions'>('catalogue');
+  const { user } = useAuth();
+
+  // Destination par défaut selon le rôle
+  const home = user?.role === 'ADMIN' ? '/admin' : '/catalogue';
 
   return (
     <div className="app">
-      <h1>Inscriptions aux cours</h1>
+      <Header />
 
-      <nav className="tabs">
-        <button
-          className={onglet === 'catalogue' ? 'active' : ''}
-          onClick={() => setOnglet('catalogue')}
-        >
-          Catalogue
-        </button>
-        <button
-          className={onglet === 'inscriptions' ? 'active' : ''}
-          onClick={() => setOnglet('inscriptions')}
-        >
-          Mes inscriptions
-        </button>
-      </nav>
+      <main className="app-main">
+        <Routes>
+          <Route
+            path="/login"
+            element={user ? <Navigate to={home} replace /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to={home} replace /> : <Register />}
+          />
 
-      {onglet === 'catalogue' ? <Catalogue /> : <MesInscriptions />}
+          <Route
+            path="/catalogue"
+            element={
+              <ProtectedRoute>
+                <Catalogue />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/mes-inscriptions"
+            element={
+              <ProtectedRoute roles={['ELEVE']}>
+                <MesInscriptions />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={['ADMIN']}>
+                <AdminCourses />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/" element={<Navigate to={user ? home : '/login'} replace />} />
+          <Route path="*" element={<Navigate to={user ? home : '/login'} replace />} />
+        </Routes>
+      </main>
     </div>
   );
 }

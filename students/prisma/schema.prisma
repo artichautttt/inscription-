@@ -13,8 +13,16 @@ datasource db {
 }
 
 model Student {
-  id    String     @id @default(uuid())
-  email String  @unique
-  nom  String
+  id        String  @id @default(uuid())
+  email     String  @unique
+  nom       String
+  prenom    String?
+  telephone String?
+  password  String
+  role      Role    @default(ELEVE)
 }
 
+enum Role {
+  ELEVE
+  ADMIN
+}

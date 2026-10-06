@@ -30,3 +30,10 @@ export class PlusDePlaceException extends DomainException {
     super('COURS_COMPLET', message, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 }
+
+/** 403 — l'utilisateur n'a pas le droit d'effectuer cette action. */
+export class AccesInterditException extends DomainException {
+  constructor(message: string) {
+    super('ACCES_INTERDIT', message, HttpStatus.FORBIDDEN);
+  }
+}

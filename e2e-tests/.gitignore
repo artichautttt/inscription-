@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+.venv/
+screenshots/
+*.pyc
+pytest_run.log
+pytest_slowmo0.log

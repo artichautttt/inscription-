@@ -1,17 +1,16 @@
 import { Module } from '@nestjs/common';
 import { EnrollmentsController } from './enrollments.controller';
 import { EnrollmentsService } from './enrollments.service';
-import { StudentsClient, MockStudentsClient } from '../clients/students.client';
-import { CoursesClient, MockCoursesClient } from '../clients/courses.client';
+import { StudentsClient, HttpStudentsClient } from '../clients/students.client';
+import { CoursesClient, HttpCoursesClient } from '../clients/courses.client';
 
 @Module({
   controllers: [EnrollmentsController],
   providers: [
     EnrollmentsService,
-    // Jalon 1 : clients MOCKÉS.
-    // Jalon 2 : remplacer par les vrais clients HTTP (ex. HttpStudentsClient / HttpCoursesClient).
-    { provide: StudentsClient, useClass: MockStudentsClient },
-    { provide: CoursesClient, useClass: MockCoursesClient },
+    // Jalon 2 : utilisation des vrais clients HTTP vers les microservices Étudiants et Cours
+    { provide: StudentsClient, useClass: HttpStudentsClient },
+    { provide: CoursesClient, useClass: HttpCoursesClient },
   ],
 })
 export class EnrollmentsModule {}
