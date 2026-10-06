@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Inscription } from '../types';
 import { deleteEnrollment, getMyEnrollments } from '../api';
 
-function statutBadge(statut: string): { cls: string; label: string } {
+export function statutBadge(statut: string): { cls: string; label: string } {
   const s = statut.toLowerCase();
   if (s === 'confirmée' || s === 'confirmee' || s === 'confirmed')
     return { cls: 'confirmed', label: statut };
