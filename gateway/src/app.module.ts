@@ -7,6 +7,7 @@ import { ProxyService } from './proxy/proxy.service';
 import { CoursesProxyController } from './proxy/courses.controller';
 import { StudentsProxyController } from './proxy/students.controller';
 import { EnrollmentsProxyController } from './proxy/enrollments.controller';
+import { WaitlistProxyController } from './proxy/waitlist.controller';
 import { AuthProxyController } from './proxy/auth.controller';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -27,6 +28,7 @@ import { RolesGuard } from './auth/roles.guard';
     CoursesProxyController,
     StudentsProxyController,
     EnrollmentsProxyController,
+    WaitlistProxyController,
   ],
   providers: [ProxyService, JwtAuthGuard, RolesGuard],
 })
