@@ -14,7 +14,7 @@ const first = (name) => events.find((e) => e.event === name);
 const faultAt = first('fault_injected')?.at;
 const detected = first('rollback_triggered')?.at;
 const disabled = first('flag_disabled')?.at;
-const reenabledAt = first('flag_reenabled')?.at;
+const reenabledAt = first('flag_reenabled')?.at ?? first('flag_enabled')?.at; // manuel (D) ou automatique (E)
 
 const pct = (a, b) => (b ? +((a / b) * 100).toFixed(2) : 0);
 const seg = (from, to) => rows.filter((r) => r.sent >= from && r.sent < to);
@@ -38,6 +38,9 @@ const out = {
   faultToRollback: faultAt && disabled ? phase(seg(faultAt, disabled)) : null,
   afterRollback: disabled ? phase(seg(disabled, end)) : null,
   rolledBack: !!disabled,
+  // Scenario E : du redemarrage de v2 a la reactivation automatique du flag par le watcher.
+  autoRecoveryDelayMs: first('flag_enabled') && first('v2_restarted') ? first('flag_enabled').at - first('v2_restarted').at : null,
+  autoRecoveryProbesOk: first('v2_healthy')?.consecutiveProbes ?? null,
   // Recovery (scenario D) : apres la reactivation manuelle, des reponses v2 en 200 reapparaissent.
   recovery: reenabledAt ? (() => {
     const after = rows.filter((r) => r.sent >= reenabledAt);

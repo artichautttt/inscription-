@@ -2,7 +2,7 @@
 /**
  * Test local de bout en bout (sans serveur Oracle) : vrai gateway + vrai watcher + vrai generateur de charge,
  * avec de FAUX services (courses v1/v2, Unleash). Verifie que la chaine detection -> rollback fonctionne.
- * Prerequis : (cd gateway && npm run build)   Usage : node canary-simulation/test/local-e2e.js
+ * Prerequis : (cd gateway && npm run build)   Usage : node canary-simulation/test/local-e2e.js [--auto]  (--auto : teste aussi la recuperation automatique)
  */
 const http = require('http');
 const path = require('path');
@@ -17,6 +17,7 @@ const EV = path.join(tmp, 'events.jsonl');
 const CSV = path.join(tmp, 'load.csv');
 const P = { gw: 13000, v1: 13002, v2: 13012, unl: 14242 };
 const FLAG = 'courses-v2-canary';
+const AUTO = process.argv.includes('--auto');
 const children = [];
 const servers = [];
 let flagEnabled = true;
@@ -38,6 +39,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       if (req.headers.authorization !== 'admintoken') return json(401, {});
       flagEnabled = false; return json(200, {});
     }
+    if (req.method === 'POST' && req.url.includes(`/features/${FLAG}/environments/development/on`)) {
+      if (req.headers.authorization !== 'admintoken') return json(401, {});
+      flagEnabled = true; return json(200, {});
+    }
     return json(202, {});
   });
 
@@ -52,13 +57,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   spawnP('node', [path.join(ROOT, 'canary-simulation/rollback-watcher/watcher.js')], {
     GATEWAY_METRICS_URL: `http://127.0.0.1:${P.gw}/internal/canary-metrics`, UNLEASH_ADMIN_URL: `http://127.0.0.1:${P.unl}`,
     UNLEASH_ADMIN_TOKEN: 'admintoken', EVENTS_FILE: EV,
+    ...(AUTO ? { AUTO_RECOVERY: '1', PROBE_URL: `http://127.0.0.1:${P.v2}/courses`, RECOVERY_SUCCESSES: 3, RECOVERY_COOLDOWN_MS: 3000 } : {}),
   }, 'watcher');
   await sleep(1000);
 
-  const DURATION = 40, FAULT = 12;
+  const DURATION = AUTO ? 70 : 40, FAULT = 12;
   const load = spawnP('node', [path.join(SIM, 'load.js'), '--duration', DURATION, '--rps', 20, '--users', 200, '--out', CSV, '--url', `http://127.0.0.1:${P.gw}/api/courses`], {}, 'load');
   await sleep(FAULT * 1000);
   v2.closeAllConnections(); await new Promise((r) => v2.close(r)); ev('fault_injected');
+  if (AUTO) {
+    await sleep(25000); // v2 reste en panne ~25 s : le watcher ne doit PAS reactiver le flag pendant ce temps
+    const stillOff = flagEnabled === false;
+    await listen(P.v2, (req, res) => { res.setHeader('content-type', 'application/json'); res.end('[]'); }); ev('v2_restarted');
+    globalThis.stillOffDuringOutage = stillOff;
+  }
   await new Promise((r) => load.on('exit', r));
 
   const s = JSON.parse(execFileSync('node', [path.join(SIM, 'summarize.js'), CSV, EV]).toString());
@@ -68,7 +80,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     ['la panne a ete detectee et le flag desactive (rollback)', s.rolledBack],
     ['rollback en moins de 20 s', s.rollbackDelayMs !== null && s.rollbackDelayMs < 20000],
     ['plus aucune reponse v2 plus de 3 s apres la desactivation du flag', s.flagPropagationMs !== null && s.flagPropagationMs < 3000],
-    ['le flag est bien OFF cote Unleash', flagEnabled === false],
+    ...(AUTO ? [
+      ['pendant la panne de v2, le flag reste OFF (pas de reactivation prematuree)', globalThis.stillOffDuringOutage === true],
+      ['apres redemarrage de v2, le watcher reactive le flag SEUL', flagEnabled === true && s.autoRecoveryDelayMs !== null],
+      ['reactivation automatique en moins de 20 s apres le redemarrage', s.autoRecoveryDelayMs !== null && s.autoRecoveryDelayMs < 20000],
+      ['recuperation verifiee : reponses v2 en 200 et 0 erreur apres reactivation', s.recovery && s.recovery.verified],
+    ] : [['le flag est bien OFF cote Unleash', flagEnabled === false]]),
   ];
   let ok = true;
   for (const [name, pass] of checks) { console.log(`${pass ? 'OK  ' : 'FAIL'} ${name}`); ok = ok && pass; }

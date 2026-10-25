@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Usage : run-scenario.sh <A|B|C|D> <numero_de_run>
-#   A sain (aucune panne) | B panne franche (pm2 stop courses-v2) | C degradation (SIGSTOP) | D panne + recovery
+# Usage : run-scenario.sh <A|B|C|D|E> <numero_de_run>
+#   A sain (aucune panne) | B panne franche (pm2 stop courses-v2) | C degradation (SIGSTOP)
+#   D panne + recovery MANUEL | E panne + recovery AUTOMATIQUE (le watcher reactive le flag seul)
 # Resultats : ~/canary-results/<scenario>-<run>/{load.csv,events.jsonl,summary.json}
 set -euo pipefail
 SC=${1:?scenario A|B|C|D}; RUN=${2:-1}
@@ -10,6 +11,8 @@ EV=$DIR/events.jsonl
 FLAG=courses-v2-canary; PROJECT=default; ENVIRONMENT=development
 ADMIN=http://127.0.0.1:4242/api/admin/projects/$PROJECT/features/$FLAG/environments/$ENVIRONMENT
 DURATION=${DURATION:-90}; FAULT_AT=${FAULT_AT:-20}; RECOVER_AT=${RECOVER_AT:-60}
+[ "$SC" = E ] && { DURATION=${DURATION_E:-110}; RECOVER_AT=${RECOVER_AT_E:-50}; }
+if [ "$SC" = E ]; then export AUTO_RECOVERY=1; else export AUTO_RECOVERY=0; fi
 now() { date +%s%3N; }
 ev() { echo "{\"event\":\"$1\",\"at\":$(now)}" >> "$EV"; }
 flag() { curl -s -o /dev/null -w "%{http_code}" -X POST -H "Authorization: $UNLEASH_ADMIN_TOKEN" "$ADMIN/$1"; }
@@ -29,10 +32,15 @@ LOAD=$!
 sleep $FAULT_AT
 case $SC in
   A) ;;
-  B|D) pm2 stop courses-v2 >/dev/null; ev fault_injected ;;   # horodate une fois le service reellement arrete
+  B|D|E) pm2 stop courses-v2 >/dev/null; ev fault_injected ;;   # horodate une fois le service reellement arrete
   C)   pm2 sendSignal SIGSTOP courses-v2 >/dev/null; ev fault_injected ;;
   *) echo "scenario inconnu"; kill $LOAD; exit 1 ;;
 esac
+if [ "$SC" = E ]; then
+  sleep $((RECOVER_AT - FAULT_AT))
+  echo "[$SC-$RUN] recovery AUTOMATIQUE : on redemarre seulement courses-v2 ; le watcher doit reactiver le flag seul"
+  pm2 start courses-v2 >/dev/null; ev v2_restarted
+fi
 if [ "$SC" = D ]; then
   sleep $((RECOVER_AT - FAULT_AT))
   echo "[$SC-$RUN] recovery : redemarrage de courses-v2 puis reactivation MANUELLE du flag"

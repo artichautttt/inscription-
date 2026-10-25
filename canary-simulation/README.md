@@ -7,7 +7,7 @@
   Reponse : en-tete `X-Backend-Version: v1|v2`.
 - Le gateway tient des metriques en fenetre glissante par version : `GET /internal/canary-metrics` (route interne, non relayee par nginx).
 - Le **rollback-watcher** lit ces metriques ; si le taux d'erreur de v2 >= seuil pendant N controles consecutifs (min. de requetes requis),
-  il **desactive le flag** via l'API admin Unleash. Il ne reactive jamais le flag seul.
+  il **desactive le flag** via l'API admin Unleash. Par defaut il ne reactive jamais le flag seul ; avec `AUTO_RECOVERY=1` (scenario E) il le reactive apres sondage de v2 (voir ci-dessous).
 - Securite : si Unleash n'est pas configure / pas pret, tout va vers v1. **Aucun repli par requete** de v2 vers v1 (sinon la panne serait masquee).
 
 ## Parametres (valeurs de la simulation)
@@ -21,6 +21,10 @@
 | Controles consecutifs | 3 | `CONSECUTIVE_CHECKS` |
 | Intervalle de controle | 1 s | `CHECK_INTERVAL_MS` |
 | Minimum de requetes v2 | 10 | `MIN_REQUESTS` |
+| Recuperation automatique | desactivee par defaut | `AUTO_RECOVERY=1` |
+| Sondes saines consecutives avant reactivation | 5 (1 sonde/s sur `PROBE_URL`, delai 1,5 s) | `RECOVERY_SUCCESSES` |
+| Attente minimale apres un rollback | 10 s (anti-oscillation) | `RECOVERY_COOLDOWN_MS` |
+| Reactivations automatiques max. | 3 | `MAX_RECOVERIES` |
 
 Erreur = reponse >= 500, delai depasse ou service injoignable. Un 4xx n'est pas une erreur.
 
@@ -28,6 +32,7 @@ Erreur = reponse >= 500, delai depasse ou service injoignable. Un 4xx n'est pas 
 - **A** sain : aucune panne, le watcher ne doit pas declencher.
 - **B** panne franche : `pm2 stop courses-v2`.
 - **C** degradation : `pm2 sendSignal SIGSTOP courses-v2` (le processus gele, les requetes depassent le delai).
+- **E** panne puis **recovery AUTOMATIQUE** : seul `courses-v2` est redemarre ; le watcher (AUTO_RECOVERY=1) le sonde directement, et reactive le flag apres 5 sondes saines consecutives.
 - **D** panne puis **recovery** : comme B, puis redemarrage de v2, reactivation MANUELLE du flag, watcher rearme ; on verifie des reponses v2 en 200.
 
 Mesures par run (`summary.json`) : delai de detection et de rollback depuis la panne, delai de propagation du flag jusqu'au gateway,
