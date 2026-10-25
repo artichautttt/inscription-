@@ -21,7 +21,8 @@ const seg = (from, to) => rows.filter((r) => r.sent >= from && r.sent < to);
 const t0 = rows.length ? rows[0].sent : 0;
 const end = rows.length ? rows[rows.length - 1].sent + 1 : 0;
 const phase = (list) => ({ requests: list.length, errors: list.filter((r) => r.err).length, errorRatePct: pct(list.filter((r) => r.err).length, list.length) });
-const lastV2 = [...rows].reverse().find((r) => r.version === 'v2');
+// Derniere reponse v2 apres la desactivation du flag ; en cas de reactivation (scenario D), on s'arrete a la reactivation.
+const lastV2 = [...rows].reverse().find((r) => r.version === 'v2' && disabled && r.sent >= disabled && (!reenabledAt || r.sent < reenabledAt));
 const lastV2Err = [...rows].reverse().find((r) => r.version === 'v2' && r.err);
 
 const out = {
