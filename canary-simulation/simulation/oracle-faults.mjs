@@ -254,6 +254,76 @@ function readSince(f, offset) {
 }
 const jsonLines = (text) => text.split(/\r?\n/).map((l) => { const i = l.indexOf('{'); if (i < 0) return null; try { return JSON.parse(l.slice(i)); } catch { return null; } }).filter(Boolean);
 
+// ---------- configuration du watcher (AUTO_RECOVERY=0 pendant les tests, puis configuration d'origine) ----------
+// pm2 `restart --update-env` FUSIONNE l'environnement de la commande pm2 dans celui du processus (Utility.extend) :
+// il ajoute / remplace des cles mais n'en retire jamais. On lance donc la commande pm2 avec EXACTEMENT l'environnement
+// d'origine du watcher (lu dans pm2 jlist, garde en memoire, jamais journalise), en ne changeant que des VALEURS de cles
+// deja presentes : aucune cle n'est ajoutee, et un second restart avec l'environnement d'origine le remet a l'identique.
+// pm2 est lance via node + chemin reel de son script, pour ne pas dependre du PATH de cet environnement.
+let watcherCfg = null; // { orig, origHash, changed: [cles], applied }
+const envHash = (e) => sha(JSON.stringify(Object.keys(e).sort().map((k) => [k, typeof e[k] === 'string' ? e[k] : JSON.stringify(e[k])])));
+const stringsOnly = (e) => Object.fromEntries(Object.entries(e).filter(([, v]) => typeof v === 'string'));
+function pm2Script() {
+  if (cfg.pm2.endsWith('.js')) return cfg.pm2;
+  const cands = path.isAbsolute(cfg.pm2) ? [cfg.pm2] : (process.env.PATH || '').split(path.delimiter).map((d) => path.join(d, cfg.pm2));
+  const bin = cands.find((c) => fs.existsSync(c));
+  if (!bin) throw new Error('binaire pm2 introuvable dans le PATH');
+  return fs.realpathSync(bin); // .../lib/node_modules/pm2/bin/pm2 (script node)
+}
+async function pm2WithEnv(args, env, guarded = true) {
+  if (guarded) guard(`pm2 ${args.join(' ')}`);
+  log('pm2_action', { args, env: "environnement d'origine du watcher (non journalise)" });
+  await execFileP(process.execPath, [pm2Script(), ...args], { env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 60000 });
+}
+async function watcherRaw() {
+  const raw = await pm2(['jlist']);
+  const p = JSON.parse(raw.slice(raw.indexOf('['))).find((x) => x.name === cfg.names.watcher);
+  if (!p) throw new Error(`${cfg.names.watcher} introuvable dans pm2`);
+  return { env: { ...(p.pm2_env?.env || {}) }, outLog: p.pm2_env?.pm_out_log_path, status: p.pm2_env?.status };
+}
+async function watcherStartedLine(outLog, offset) {
+  const w = await waitFor('watcher_started', () => jsonLines(readSince(outLog, offset)).find((e) => e.event === 'watcher_started'), 15000, 300);
+  return w.value;
+}
+async function watcherToTestConfig() {
+  const { env: orig, outLog } = await watcherRaw();
+  const test = stringsOnly(orig);
+  const changed = [];
+  if (orig.AUTO_RECOVERY !== undefined && orig.AUTO_RECOVERY !== '0') { test.AUTO_RECOVERY = '0'; changed.push('AUTO_RECOVERY'); }
+  // EVENTS_FILE pointe peut-etre vers ~/canary-results/E-<run>/events.jsonl : on n'y ecrit pas les evenements des tests.
+  if (typeof orig.EVENTS_FILE === 'string' && orig.EVENTS_FILE) { test.EVENTS_FILE = path.join(OUT, 'watcher-events.jsonl'); changed.push('EVENTS_FILE'); }
+  watcherCfg = { orig, origHash: envHash(orig), changed, applied: false };
+  log('watcher_config_initial', { keys: Object.keys(orig).length, AUTO_RECOVERY: orig.AUTO_RECOVERY ?? '(absent : desactive par defaut)', EVENTS_FILE: orig.EVENTS_FILE ?? '(absent)', tokenPresent: !!orig.UNLEASH_ADMIN_TOKEN, envHash: watcherCfg.origHash.slice(0, 12) });
+  if (!changed.length) { log('watcher_config_unchanged', { reason: "AUTO_RECOVERY absent ou deja a 0, pas d'EVENTS_FILE" }); return; }
+  touched = true;
+  const off = fileSize(outLog);
+  watcherCfg.applied = true;
+  await pm2WithEnv(['restart', cfg.names.watcher, '--update-env'], test);
+  const after = (await watcherRaw()).env;
+  const added = Object.keys(after).filter((k) => !(k in orig));
+  const modified = Object.keys(orig).filter((k) => JSON.stringify(after[k]) !== JSON.stringify(orig[k]));
+  const line = await watcherStartedLine(outLog, off);
+  log('watcher_config_test', { AUTO_RECOVERY: after.AUTO_RECOVERY, EVENTS_FILE: after.EVENTS_FILE, addedKeys: added, modifiedKeys: modified, watcherSaysAutoRecovery: line?.autoRecovery ?? null });
+  if (added.length) throw new Error(`pm2 a ajoute des variables au watcher (${added.join(', ')}) : restauration exacte impossible, arret`);
+  if (modified.some((k) => !changed.includes(k))) throw new Error(`variables modifiees inattendues : ${modified.join(', ')}`);
+  if (!line || line.autoRecovery !== false) throw new Error('le watcher ne confirme pas autoRecovery=false');
+}
+async function restoreWatcherConfig() {
+  if (!watcherCfg?.applied) return { needed: false };
+  const { outLog } = await watcherRaw();
+  const off = fileSize(outLog);
+  await pm2WithEnv(['restart', cfg.names.watcher, '--update-env'], stringsOnly(watcherCfg.orig), false); // pas de guard : doit passer apres Ctrl-C
+  const w = await watcherRaw();
+  const diff = [...new Set([...Object.keys(w.env), ...Object.keys(watcherCfg.orig)])].filter((k) => JSON.stringify(w.env[k]) !== JSON.stringify(watcherCfg.orig[k]));
+  const line = await watcherStartedLine(outLog, off);
+  const expectAuto = watcherCfg.orig.AUTO_RECOVERY === '1';
+  const out = { identical: envHash(w.env) === watcherCfg.origHash, differingKeys: diff, status: w.status, AUTO_RECOVERY: w.env.AUTO_RECOVERY, watcherSaysAutoRecovery: line?.autoRecovery ?? null };
+  out.ok = out.identical && w.status === 'online' && line?.autoRecovery === expectAuto;
+  log('watcher_config_restored', out);
+  if (out.ok) watcherCfg.applied = false;
+  return out;
+}
+
 /** Redemarre le watcher (pm2 restart garde son environnement) et lit sa ligne watcher_started. */
 async function restartWatcher() {
   const w = proc(await pm2Snapshot(), cfg.names.watcher);
@@ -580,7 +650,8 @@ async function restoreOnce() {
     const h = await waitFor('unleash-health', async () => (await unleashHealth()).status === 200, 120000, 1000);
     if (!h.ok) throw new Error('Unleash /health != 200');
   });
-  await step('rollback-watcher', async () => {
+  await step("rollback-watcher : configuration d'origine", async () => {
+    if (watcherCfg?.applied) { const w = await restoreWatcherConfig(); if (!w.ok) throw new Error(`configuration du watcher non restauree : ${JSON.stringify(w)}`); return { detail: w }; }
     if (!watcherWasOnline) return { note: 'ne tournait pas au depart : non relance' };
     await pm2(['restart', cfg.names.watcher]); // repart en WATCHING (il ne se rearme pas seul apres un rollback)
   });
@@ -595,10 +666,11 @@ async function restoreOnce() {
     gatewayEnv: envSwitch ? 'NON RESTAURE (voir *.oracle-faults.bak)' : 'origine', proxyPortOpen: await tcpOpen('127.0.0.1', cfg.proxyPort),
     v1Direct: await ok200(cfg.v1DirectUrl), v2Direct: await ok200(cfg.v2DirectUrl), gatewayHttp: (await getAs('final-check')).status,
     watcher: proc(fin, cfg.names.watcher)?.status ?? 'absent', processesNotOnline: offline,
+    watcherConfig: !watcherCfg ? 'non lue' : watcherCfg.applied ? 'NON RESTAUREE' : watcherCfg.changed.length ? `origine restauree (${watcherCfg.changed.join(', ')} remis, empreinte identique)` : 'inchangee',
   };
   const f = r.final;
   r.ok = f.postgresql !== 'INACTIF' && f.unleashHealth === 200 && f.flagEnabled === true && f.flagRollout === String(cfg.rollout) && f.gatewayEnv === 'origine' && !f.proxyPortOpen
-    && f.v1Direct && f.v2Direct && f.gatewayHttp === 200 && (!watcherWasOnline || f.watcher === 'online') && offline.length === 0;
+    && f.v1Direct && f.v2Direct && f.gatewayHttp === 200 && (!watcherWasOnline || f.watcher === 'online') && offline.length === 0 && !watcherCfg?.applied;
   log('restored', r);
   results.restore = r;
 }
@@ -634,7 +706,7 @@ function writeSummary() {
   }
   const fin = results.restore?.final;
   if (results.restore?.skipped) rows.push(`| Etat final | rien a restaurer | ${results.restore.skipped} | - |`);
-  if (fin) rows.push(`| Etat final | PostgreSQL actif, Unleash sain, flag ON 20 %, gateway sur :3012, proxy arrete, processus online | PostgreSQL ${fin.postgresql} ; Unleash /health ${fin.unleashHealth} ; flag ${fin.flagEnabled ? 'ON' : 'OFF'} ${fin.flagRollout} % ; .env gateway ${fin.gatewayEnv} ; port ${cfg.proxyPort} ${fin.proxyPortOpen ? 'OUVERT' : 'ferme'} ; v1/v2 direct ${fin.v1Direct ? 200 : 'KO'}/${fin.v2Direct ? 200 : 'KO'} ; gateway HTTP ${fin.gatewayHttp} ; watcher ${fin.watcher} ; non online : ${fin.processesNotOnline.join(', ') || 'aucun'} | ${results.restore.ok ? 'PASS' : 'FAIL'} |`);
+  if (fin) rows.push(`| Etat final | PostgreSQL actif, Unleash sain, flag ON 20 %, gateway sur :3012, proxy arrete, watcher dans sa configuration d'origine, processus online | PostgreSQL ${fin.postgresql} ; Unleash /health ${fin.unleashHealth} ; flag ${fin.flagEnabled ? 'ON' : 'OFF'} ${fin.flagRollout} % ; .env gateway ${fin.gatewayEnv} ; port ${cfg.proxyPort} ${fin.proxyPortOpen ? 'OUVERT' : 'ferme'} ; v1/v2 direct ${fin.v1Direct ? 200 : 'KO'}/${fin.v2Direct ? 200 : 'KO'} ; gateway HTTP ${fin.gatewayHttp} ; watcher ${fin.watcher}, configuration ${fin.watcherConfig} ; non online : ${fin.processesNotOnline.join(', ') || 'aucun'} | ${results.restore.ok ? 'PASS' : 'FAIL'} |`);
   const md = [
     `# Defauts Oracle (pm2 + nginx) — ${new Date().toISOString()}`, '',
     `Flag \`${cfg.flag}\` ON a ${cfg.rollout} %, charge ${cfg.rps} req/s sur ${cfg.users} utilisateurs. Erreur = 0 (connexion), 599 (delai client) ou >= 500. Delais du watcher lus dans son journal pm2.`, '',
@@ -658,6 +730,8 @@ async function main() {
   }
   watcherWasOnline = true;
   if (DO_DB) pgCtl = await pgControl(); // controle sudo/service des le depart, avant les tests F
+  if (F_LIST.length && (await tcpOpen('127.0.0.1', cfg.proxyPort))) throw new Error(`le port ${cfg.proxyPort} est deja utilise : aucune action faite`);
+  await watcherToTestConfig(); // AUTO_RECOVERY=0 (et EVENTS_FILE dans les preuves) le temps des tests
   const env0 = await getFlagEnv();
   log('initial_flag', { enabled: env0.enabled, rollout: rolloutStrategy(env0).parameters.rollout });
 
