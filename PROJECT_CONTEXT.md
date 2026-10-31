@@ -295,6 +295,60 @@ pour `JWT_SECRET` dans les deux fichiers (sinon la gateway rejettera tout token 
 
 ---
 
+## 🧪 7bis. Tests unitaires frontend (Vitest + React Testing Library)
+
+### Outillage (`frontend/`)
+- **Vitest 2** (compatible Vite 5) + **jsdom**, `@testing-library/react`, `@testing-library/user-event`,
+  `@testing-library/jest-dom`, `@vitest/coverage-v8` (devDependencies uniquement).
+- `vitest.config.ts` : `environment: "jsdom"`, `globals: true`, `setupFiles: ./src/test/setup.ts`,
+  couverture v8 sur `src/**` (hors tests, `main.tsx`, `types.ts`).
+- `src/test/setup.ts` : importe `@testing-library/jest-dom/vitest` (matchers + types pour Vitest),
+  vide `localStorage` et restaure les mocks après chaque test.
+- `src/test/utils.tsx` : `renderWithAuth(ui, { user, route, path })` = `MemoryRouter` + **vrai**
+  `AuthProvider` réhydraté depuis `localStorage`, plus une sonde `data-testid="location"` pour vérifier les
+  redirections. Fabriques `makeCours`, `makeInscription`, et les utilisateurs `eleve` / `admin`.
+
+### Commandes
+```powershell
+cd frontend
+npm test                # vitest en mode watch
+npm test -- --run       # une passe (CI)
+npm run test:cov        # une passe + rapport de couverture (texte + frontend/coverage/index.html)
+```
+
+### Stratégie de mock
+- **Jamais de vrai réseau.** `api.test.ts` remplace `fetch` (`vi.stubGlobal`) et vérifie URL, méthode,
+  corps, en-tête `Authorization: Bearer …` et propagation des messages `{ code, message }`.
+- Les tests de composants font un mock partiel de `../api` (`vi.mock` + `importOriginal`) : seuls les appels
+  réseau sont des `vi.fn()`, `getToken` / `setToken` / `clearToken` restent réels pour que l'AuthProvider
+  fonctionne vraiment.
+- `placesLevel` (Catalogue) et `statutBadge` (MesInscriptions) sont **exportées** (export nommé) pour être
+  testées directement ; leur comportement n'a pas changé.
+
+### Contenu (100 tests, 10 fichiers, tous verts)
+| Fichier | Tests | Couvre |
+|---|:-:|---|
+| `src/api.test.ts` | 20 | token localStorage, en-tête Bearer, getCourses, createEnrollment (409/422), getMyEnrollments, deleteEnrollment (204/403), login (401), register (409), CRUD cours admin, by-course |
+| `components/Catalogue.test.tsx` | 14 | `placesLevel` (limites 0.5 / 0.2, 0 place), chargement, N cartes, jauge high/medium/low, Complet désactivé, ADMIN sans bouton, inscription succès/erreur, erreur de chargement, état vide |
+| `components/MesInscriptions.test.tsx` | 17 | `statutBadge` (casse/accent/anglais, pending, default, label conservé), liste + titre (repli sur coursId), date FR, bouton Annuler, annulation succès/erreur, état vide |
+| `components/AdminCourses.test.tsx` | 13 | formulaire de création, création succès/erreur, édition/annulation, suppression confirmée/refusée (`window.confirm`), Voir inscrits / Masquer / vide / erreur, Retirer un inscrit |
+| `components/Login.test.tsx` | 5 | champs, redirection ELEVE→/catalogue et ADMIN→/admin, erreur 401, bouton désactivé pendant la requête |
+| `components/Register.test.tsx` | 5 | champs, payload envoyé + redirection, email déjà pris, validation client (champ manquant, mot de passe < 6) |
+| `components/Header.test.tsx` | 6 | sans session, nom + rôle, onglets par rôle, onglet actif, déconnexion |
+| `components/ProtectedRoute.test.tsx` | 4 | non connecté → /login, mauvais rôle → /catalogue, rôle autorisé, sans `roles` |
+| `src/App.test.tsx` | 9 | redirections de `/` par rôle, /login quand déjà connecté, /register, navigation par onglets, ELEVE sur /admin, logout, route inconnue |
+| `auth/AuthContext.test.tsx` | 7 | hors provider, réhydratation, session corrompue, login, register, logout, logout dans un autre onglet (événement `storage`) |
+
+### Couverture (`npm run test:cov`)
+| Instructions | Branches | Fonctions | Lignes |
+|:-:|:-:|:-:|:-:|
+| **99,29 %** | **97,08 %** | **98,27 %** | **99,29 %** |
+
+Tous les fichiers sont à 100 % sauf `AdminCourses.tsx` (97,6 % des lignes) : les branches d'erreur de
+`updateCourse`, `deleteCourse` et « Retirer un inscrit » ne sont pas testées.
+
+---
+
 ## ⚡ 8. Scénario de test complet (parcours principal)
 
 Scénario d'acceptation du jalon 3 (correspond à la demande initiale) :

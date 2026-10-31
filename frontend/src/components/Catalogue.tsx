@@ -3,7 +3,7 @@ import type { Cours } from '../types';
 import { getCourses, createEnrollment } from '../api';
 import { useAuth } from '../auth/AuthContext';
 
-function placesLevel(restantes: number, capacite: number): 'high' | 'medium' | 'low' {
+export function placesLevel(restantes: number, capacite: number): 'high' | 'medium' | 'low' {
   const ratio = restantes / capacite;
   if (ratio > 0.5) return 'high';
   if (ratio > 0.2) return 'medium';
