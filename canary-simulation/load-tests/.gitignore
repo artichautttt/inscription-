@@ -1,0 +1,9 @@
+# Secrets : jamais versionnés
+.env
+.env.*
+*.secret
+
+# Fichiers générés localement par les exécutions k6
+results/*.html
+results/*.started
+results/*.ended
