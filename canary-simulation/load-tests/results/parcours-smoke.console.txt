@@ -1,0 +1,19 @@
+        script: k6/scenarios-parcours.js
+     scenarios: (100.00%) 4 scenarios, 5 max VUs, 2m30s max duration (incl. graceful stop):
+              * P1_visiteur: Up to 2 looping VUs for 2m0s over 2 stages (gracefulRampDown: 30s, exec: visiteur, gracefulStop: 30s)
+              * P2_nouvel_etudiant: Up to 1 looping VUs for 2m0s over 2 stages (gracefulRampDown: 30s, exec: nouvelEtudiant, gracefulStop: 30s)
+              * P3_etudiant_habitue: Up to 1 looping VUs for 2m0s over 2 stages (gracefulRampDown: 30s, exec: etudiantHabitue, gracefulStop: 30s)
+              * P4_admin: Up to 1 looping VUs for 2m0s over 2 stages (gracefulRampDown: 30s, exec: admin, gracefulStop: 30s)
+Profil smoke
+Requêtes : 144  |  débit : 0.9 req/s
+Erreurs (http_req_failed) : 0.00 %  |  5xx : 0
+Latence globale p50/p95/p99 : 134.6414 / 314.610365 / 352.31756099999984 ms
+Canary : v1 37 (p95 133.38787999999977 ms), v2 17 (p95 66.05211999999997 ms)
+Seuils :
+  OK  http_req_duration{scenario:P3_etudiant_habitue} p(95)<800
+  OK  http_req_duration{scenario:P2_nouvel_etudiant} p(95)<800
+  OK  http_req_duration{scenario:P4_admin} p(95)<800
+  OK  http_req_failed rate<0.01
+  OK  http_req_duration{scenario:P1_visiteur} p(95)<500
+
+running (2m35.4s), 0/5 VUs, 21 complete and 0 interrupted iterations

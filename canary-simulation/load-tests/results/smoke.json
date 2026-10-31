@@ -1,0 +1,235 @@
+{
+    "metrics": {
+        "canary_servi_v1": {
+            "rate": 0.7717839091557165,
+            "count": 49
+        },
+        "data_received": {
+            "count": 106239,
+            "rate": 1673.3377698937584
+        },
+        "iterations": {
+            "count": 33,
+            "rate": 0.5197728367783396
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 27.034,
+            "p(90)": 223.7915,
+            "p(95)": 266.3813,
+            "p(99)": 337.0494000000004,
+            "max": 456.101,
+            "avg": 72.09181234567903
+        },
+        "http_req_blocked": {
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0.8467,
+            "p(99)": 17.34476000000001,
+            "max": 20.5698,
+            "avg": 0.6601777777777779
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 0,
+            "avg": 0
+        },
+        "canary_latence_v2": {
+            "p(90)": 58.19222,
+            "p(95)": 58.940485,
+            "p(99)": 59.559697,
+            "max": 59.7145,
+            "avg": 31.014433333333333,
+            "med": 23.894599999999997
+        },
+        "http_reqs": {
+            "count": 81,
+            "rate": 1.27580605391047
+        },
+        "http_req_sending": {
+            "avg": 0.05532222222222222,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0.5309,
+            "p(99)": 1.0512600000000003,
+            "max": 1.0987
+        },
+        "canary_latence_v1": {
+            "avg": 40.49055102040817,
+            "med": 18.8893,
+            "p(90)": 70.06884000000004,
+            "p(95)": 100.38961999999995,
+            "p(99)": 266.61169999999976,
+            "max": 295.4405
+        },
+        "iteration_duration": {
+            "avg": 5246.5776242424245,
+            "med": 4289.169,
+            "p(90)": 11075.81618,
+            "p(95)": 11414.19996,
+            "p(99)": 11961.33172,
+            "max": 12032.9642
+        },
+        "http_req_connecting": {
+            "max": 18.2885,
+            "avg": 0.597441975308642,
+            "med": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 16.247780000000006
+        },
+        "http_req_duration{scenario:S1_visiteur}": {
+            "p(90)": 65.9109,
+            "p(95)": 97.832275,
+            "p(99)": 262.40750000000014,
+            "max": 295.4405,
+            "avg": 40.63433392857143,
+            "med": 20.981650000000002,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "group_duration": {
+            "avg": 231.25032000000002,
+            "med": 207.5425,
+            "p(90)": 285.36534,
+            "p(95)": 305.52152,
+            "p(99)": 321.64646400000004,
+            "max": 325.6777
+        },
+        "http_req_receiving": {
+            "avg": 0.5027345679012347,
+            "med": 0.5261,
+            "p(90)": 0.9976,
+            "p(95)": 1.1337,
+            "p(99)": 1.736500000000003,
+            "max": 2.5985
+        },
+        "http_req_duration{scenario:S2_etudiant}": {
+            "avg": 142.556564,
+            "med": 82.9149,
+            "p(90)": 281.5214,
+            "p(95)": 304.1521599999999,
+            "p(99)": 420.3855199999997,
+            "max": 456.101,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "checks": {
+            "passes": 81,
+            "fails": 0,
+            "value": 1
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 3
+        },
+        "canary_servi_v2": {
+            "count": 12,
+            "rate": 0.1890083042830326
+        },
+        "data_sent": {
+            "count": 16114,
+            "rate": 253.80665126806562
+        },
+        "http_req_duration": {
+            "avg": 72.09181234567903,
+            "med": 27.034,
+            "p(90)": 223.7915,
+            "p(95)": 266.3813,
+            "p(99)": 337.0494000000004,
+            "max": 456.101
+        },
+        "http_req_failed": {
+            "fails": 81,
+            "passes": 0,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_waiting": {
+            "p(95)": 265.6421,
+            "p(99)": 336.6266800000004,
+            "max": 456.101,
+            "avg": 71.53375555555556,
+            "med": 26.4221,
+            "p(90)": 223.0939
+        },
+        "vus_max": {
+            "max": 3,
+            "value": 3,
+            "min": 3
+        }
+    },
+    "root_group": {
+        "groups": {
+            "compte": {
+                "name": "compte",
+                "path": "::compte",
+                "id": "7acf2a7f63188950f74006c90f33cf56",
+                "groups": {},
+                "checks": {
+                        "S2 register 201": {
+                            "name": "S2 register 201",
+                            "path": "::compte::S2 register 201",
+                            "id": "c659a840afeead1ad60025056ac3c0d5",
+                            "passes": 5,
+                            "fails": 0
+                        }
+                    }
+            }
+        },
+        "checks": {
+            "S1 catalogue 200": {
+                "name": "S1 catalogue 200",
+                "path": "::S1 catalogue 200",
+                "id": "2ebb811bfe4269d07a5857a5b98a6390",
+                "passes": 28,
+                "fails": 0
+            },
+            "S1 détail 200": {
+                "passes": 28,
+                "fails": 0,
+                "name": "S1 détail 200",
+                "path": "::S1 détail 200",
+                "id": "3b75f45f244aa016b57938082c13af02"
+            },
+            "S2 login 200": {
+                "fails": 0,
+                "name": "S2 login 200",
+                "path": "::S2 login 200",
+                "id": "2c7e2f91ffb202b67393ed4a4cfdd7c8",
+                "passes": 5
+            },
+            "S2 catalogue 200": {
+                "passes": 5,
+                "fails": 0,
+                "name": "S2 catalogue 200",
+                "path": "::S2 catalogue 200",
+                "id": "b423852e2b8fb2c903846b1bb7b4761a"
+            },
+            "S2 inscription 201": {
+                "name": "S2 inscription 201",
+                "path": "::S2 inscription 201",
+                "id": "6d4490056e0de40d7b6196620a71afe0",
+                "passes": 5,
+                "fails": 0
+            },
+            "S2 mes inscriptions 200": {
+                "fails": 0,
+                "name": "S2 mes inscriptions 200",
+                "path": "::S2 mes inscriptions 200",
+                "id": "14ce222385a0b329c6ee786944be43d4",
+                "passes": 5
+            }
+        },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+}

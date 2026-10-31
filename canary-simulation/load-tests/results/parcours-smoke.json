@@ -1,0 +1,522 @@
+{
+  "metrics": {
+    "vus": {
+      "values": {
+        "value": 1,
+        "min": 0,
+        "max": 5
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "http_req_duration{scenario:P3_etudiant_habitue}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 210.37127500000003,
+        "p(99)": 233.07665499999996,
+        "max": 238.753,
+        "avg": 75.82298,
+        "med": 40.64925,
+        "p(90)": 190.01836000000003
+      },
+      "thresholds": {
+        "p(95)<800": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 1.6808,
+        "avg": 0.1468763888888889,
+        "med": 0,
+        "p(90)": 0.6133500000000002,
+        "p(95)": 0.721005,
+        "p(99)": 1.3194379999999997
+      }
+    },
+    "parcours_P4_admin_duree": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 37685.54,
+        "max": 37718,
+        "avg": 34051.75,
+        "med": 34993,
+        "p(90)": 37393.4,
+        "p(95)": 37555.7
+      }
+    },
+    "parcours_P2_nouvel_etudiant_duree": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 48318.4,
+        "max": 48377,
+        "avg": 45884,
+        "med": 45447,
+        "p(90)": 47791,
+        "p(95)": 48084
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 142.25989097222228,
+        "med": 134.6414,
+        "p(90)": 305.72956000000005,
+        "p(95)": 314.610365,
+        "p(99)": 352.31756099999984,
+        "max": 386.4852
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 21,
+        "rate": 0.13509750569835488
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 94,
+        "fails": 0
+      }
+    },
+    "vus_max": {
+      "values": {
+        "value": 5,
+        "min": 5,
+        "max": 5
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "http_req_duration{expected_response:true}": {
+      "values": {
+        "med": 134.6414,
+        "p(90)": 305.72956000000005,
+        "p(95)": 314.610365,
+        "p(99)": 352.31756099999984,
+        "max": 386.4852,
+        "avg": 142.25989097222228
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 41147,
+        "rate": 264.7074793795337
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 144,
+        "rate": 0.9263828962172906
+      }
+    },
+    "group_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 48376.2852,
+        "avg": 31072.78827619047,
+        "med": 28503.28,
+        "p(90)": 43827.6505,
+        "p(95)": 45446.2771,
+        "p(99)": 47790.28358
+      }
+    },
+    "http_req_duration{scenario:P2_nouvel_etudiant}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 57.0715,
+        "p(90)": 342.13378000000006,
+        "p(95)": 364.40083999999996,
+        "p(99)": 382.06832799999995,
+        "max": 386.4852,
+        "avg": 120.8708277777778
+      },
+      "thresholds": {
+        "p(95)<800": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{scenario:P4_admin}": {
+      "contains": "time",
+      "values": {
+        "avg": 131.9436625,
+        "med": 141.68355,
+        "p(90)": 223.63305,
+        "p(95)": 249.2408,
+        "p(99)": 251.28152,
+        "max": 251.7917
+      },
+      "thresholds": {
+        "p(95)<800": {
+          "ok": true
+        }
+      },
+      "type": "trend"
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "med": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0,
+        "max": 0
+      }
+    },
+    "canary_latence_v1": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 81.08929999999998,
+        "p(95)": 133.38787999999977,
+        "p(99)": 206.65005600000003,
+        "max": 223.8582,
+        "avg": 48.3229918918919,
+        "med": 32.1035
+      }
+    },
+    "http_req_connecting": {
+      "contains": "time",
+      "values": {
+        "max": 32.7765,
+        "avg": 0.7033979166666666,
+        "med": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 15.758377999999993
+      },
+      "type": "trend"
+    },
+    "http_req_waiting": {
+      "values": {
+        "avg": 140.60512222222232,
+        "med": 131.9049,
+        "p(90)": 305.35359000000005,
+        "p(95)": 314.38925,
+        "p(99)": 351.3371039999999,
+        "max": 386.4852
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "canary_servi_v1": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 37,
+        "rate": 0.2380289386113872
+      }
+    },
+    "parcours_P1_visiteur_duree": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 27652.6,
+        "p(95)": 27925.3,
+        "p(99)": 28143.46,
+        "max": 28198,
+        "avg": 25828.7,
+        "med": 25209
+      }
+    },
+    "data_received": {
+      "values": {
+        "count": 199287,
+        "rate": 1282.0560294337167
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 43828.1739,
+        "p(95)": 45446.2771,
+        "p(99)": 47791.1131,
+        "max": 48377.3221,
+        "avg": 31073.086761904764,
+        "med": 28503.28
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 42.5472,
+        "avg": 1.5078923611111115,
+        "med": 0.5326,
+        "p(90)": 1.171140000000002,
+        "p(95)": 1.6520099999999993,
+        "p(99)": 28.496493999999988
+      }
+    },
+    "canary_latence_v2": {
+      "values": {
+        "avg": 36.40326470588236,
+        "med": 31.8495,
+        "p(90)": 57.60792,
+        "p(95)": 66.05211999999997,
+        "p(99)": 85.181784,
+        "max": 89.9642
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_req_blocked": {
+      "contains": "time",
+      "values": {
+        "p(99)": 16.076608999999987,
+        "max": 32.7765,
+        "avg": 0.7221875000000001,
+        "med": 0,
+        "p(90)": 0,
+        "p(95)": 0.6097399999999994
+      },
+      "type": "trend"
+    },
+    "parcours_P3_etudiant_habitue_duree": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 32261.399999999998,
+        "max": 32334,
+        "avg": 30097,
+        "med": 29557,
+        "p(90)": 31608,
+        "p(95)": 31971
+      }
+    },
+    "http_req_failed": {
+      "thresholds": {
+        "rate<0.01": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 144
+      }
+    },
+    "canary_servi_v2": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 17,
+        "rate": 0.1093646474700968
+      }
+    },
+    "http_req_duration{scenario:P1_visiteur}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 48.2901875,
+        "med": 36.562,
+        "p(90)": 89.98889000000001,
+        "p(95)": 125.38726999999984,
+        "p(99)": 205.21604399999998,
+        "max": 223.8582
+      },
+      "thresholds": {
+        "p(95)<500": {
+          "ok": true
+        }
+      }
+    }
+  },
+  "root_group": {
+    "checks": [],
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+        {
+          "path": "::P1 visiteur",
+          "id": "76c3040f1c8f9141dcfc9aadeb43cbca",
+          "groups": [],
+          "checks": [
+              {
+                "name": "P1 catalogue 200",
+                "path": "::P1 visiteur::P1 catalogue 200",
+                "id": "be0961bc678c5af4746bd62eff24bacf",
+                "passes": 20,
+                "fails": 0
+              },
+              {
+                "fails": 0,
+                "name": "P1 détail 200",
+                "path": "::P1 visiteur::P1 détail 200",
+                "id": "dbd0ed1b85d4a1debc36168d3b283ccd",
+                "passes": 20
+              }
+            ],
+          "name": "P1 visiteur"
+        },
+        {
+          "groups": [],
+          "checks": [
+              {
+                "name": "P3 connexion 200",
+                "path": "::P3 étudiant habitué::P3 connexion 200",
+                "id": "9e4338a4d45d7ced491bf4d419618618",
+                "passes": 4,
+                "fails": 0
+              },
+              {
+                "id": "85d3eb499324dcc1cef0e2dfda2463f7",
+                "passes": 4,
+                "fails": 0,
+                "name": "P3 mes inscriptions 200",
+                "path": "::P3 étudiant habitué::P3 mes inscriptions 200"
+              },
+              {
+                "path": "::P3 étudiant habitué::P3 catalogue 200",
+                "id": "e1927d789fe7a514cd6c0bd9063752dc",
+                "passes": 4,
+                "fails": 0,
+                "name": "P3 catalogue 200"
+              },
+              {
+                "id": "08f8b515c61c6c275516f5a377c5e1dc",
+                "passes": 4,
+                "fails": 0,
+                "name": "P3 inscription 201 ou 409",
+                "path": "::P3 étudiant habitué::P3 inscription 201 ou 409"
+              },
+              {
+                "name": "P3 vérification 200",
+                "path": "::P3 étudiant habitué::P3 vérification 200",
+                "id": "558d82853ae67575e3ee961434230044",
+                "passes": 4,
+                "fails": 0
+              }
+            ],
+          "name": "P3 étudiant habitué",
+          "path": "::P3 étudiant habitué",
+          "id": "f8791c9929cf787bfe3dc940149169bd"
+        },
+        {
+          "name": "P4 administrateur",
+          "path": "::P4 administrateur",
+          "id": "8d8b2edd6008e2272d1914b95b6b1104",
+          "groups": [],
+          "checks": [
+              {
+                "fails": 0,
+                "name": "P4 connexion 200",
+                "path": "::P4 administrateur::P4 connexion 200",
+                "id": "73fa7862522270a733210578bbbd82d1",
+                "passes": 4
+              },
+              {
+                "name": "P4 catalogue 200",
+                "path": "::P4 administrateur::P4 catalogue 200",
+                "id": "26a94b22d3bee37ee5cca87ad590e530",
+                "passes": 4,
+                "fails": 0
+              },
+              {
+                "name": "P4 inscrits du cours 200",
+                "path": "::P4 administrateur::P4 inscrits du cours 200",
+                "id": "c1d4b31b77b30cdc6c7d61001d2780c0",
+                "passes": 8,
+                "fails": 0
+              }
+            ]
+        },
+        {
+          "name": "P2 nouvel étudiant",
+          "path": "::P2 nouvel étudiant",
+          "id": "8734dee3e26080045c91504a313d8d6d",
+          "groups": [],
+          "checks": [
+              {
+                "id": "34c5020aca4512d199518e4e50b03fa3",
+                "passes": 3,
+                "fails": 0,
+                "name": "P2 création de compte 201",
+                "path": "::P2 nouvel étudiant::P2 création de compte 201"
+              },
+              {
+                "passes": 3,
+                "fails": 0,
+                "name": "P2 connexion 200",
+                "path": "::P2 nouvel étudiant::P2 connexion 200",
+                "id": "0e099d01176c3e5f0c42bf19de2d3734"
+              },
+              {
+                "passes": 3,
+                "fails": 0,
+                "name": "P2 catalogue 200",
+                "path": "::P2 nouvel étudiant::P2 catalogue 200",
+                "id": "b204e356eb5cd6e7f7257bfc55c169b7"
+              },
+              {
+                "name": "P2 détail 200",
+                "path": "::P2 nouvel étudiant::P2 détail 200",
+                "id": "339d305a36ba20f24f630e81bfb4cd4b",
+                "passes": 3,
+                "fails": 0
+              },
+              {
+                "passes": 3,
+                "fails": 0,
+                "name": "P2 inscription au cours 201",
+                "path": "::P2 nouvel étudiant::P2 inscription au cours 201",
+                "id": "f4fc269795a2e5e3ee430035fac4fdf7"
+              },
+              {
+                "id": "039ef73d392f88e8af6074566d2b7d17",
+                "passes": 3,
+                "fails": 0,
+                "name": "P2 mes inscriptions 200",
+                "path": "::P2 nouvel étudiant::P2 mes inscriptions 200"
+              }
+            ]
+        }
+      ]
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "med",
+      "p(90)",
+      "p(95)",
+      "p(99)",
+      "max"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 155443.2844
+  }
+}
