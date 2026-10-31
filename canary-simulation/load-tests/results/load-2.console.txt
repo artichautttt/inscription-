@@ -1,0 +1,30 @@
+Resume k6 — profil load
+  canary_latence_v1                                    max=771.14 avg=20.83 med=13.83 p(90)=52.87 p(95)=56.41 p(99)=69.04
+  canary_latence_v2                                    p(99)=71.07 max=239.67 avg=22.25 med=15.28 p(90)=54.75 p(95)=58.24
+  canary_servi_v1                                      rate=9.26 count=3640
+  canary_servi_v2                                      count=675 rate=1.72
+  checks                                               passes=5111 fails=0 rate=1
+  data_received                                        count=6934494 rate=17638.35
+  data_sent                                            count=879030 rate=2235.87
+  group_duration                                       avg=239.01 med=210.98 p(90)=286.44 p(95)=324.61 p(99)=521.30 max=2199.19
+  http_req_blocked                                     p(99)=0.68 max=21.45 avg=0.08 med=0 p(90)=0 p(95)=0
+  http_req_connecting                                  avg=0.06 med=0 p(90)=0 p(95)=0 p(99)=0 max=20.85
+  http_req_duration                                    p(95)=206.15 p(99)=258.78 max=2201.37 avg=42.14 med=15.21 p(90)=76.23
+  http_req_duration{expected_response:true}            avg=42.14 med=15.21 p(90)=76.23 p(95)=206.15 p(99)=258.78 max=2201.37
+  http_req_duration{scenario:S1_visiteur}              avg=21.22 med=14.08 p(90)=53.27 p(95)=57.02 p(99)=70.68 max=771.14 [OK p(95)<500]
+  http_req_duration{scenario:S2_etudiant}              avg=128.66 med=73.60 p(90)=221.08 p(95)=255.93 p(99)=403.85 max=2201.37 [OK p(95)<500]
+  http_req_failed                                      rate=0 passes=0 fails=5111 [OK rate<0.01]
+  http_req_receiving                                   max=32.23 avg=0.50 med=0.51 p(90)=1.00 p(95)=1.13 p(99)=1.69
+  http_req_sending                                     avg=0.18 med=0 p(90)=0 p(95)=0.52 p(99)=1.02 max=477.74
+  http_req_tls_handshaking                             avg=0 med=0 p(90)=0 p(95)=0 p(99)=0 max=0
+  http_req_waiting                                     p(90)=75.77 p(95)=205.49 p(99)=257.25 max=2200.93 avg=41.46 med=14.63
+  http_reqs                                            count=5111 rate=13.00
+  iteration_duration                                   p(95)=10201.20 p(99)=12209.61 max=13423.16 avg=4604.21 med=4131.51 p(90)=5716.78
+  iterations                                           count=2256 rate=5.74
+  vus                                                  max=30 value=1 min=0
+  vus_max                                              value=30 min=30 max=30
+  -> synthese JSON : results/load.json
+
+
+running (6m33.1s), 00/30 VUs, 2256 complete and 1 interrupted iterations
+EXIT 0
